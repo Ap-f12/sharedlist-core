@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos.Serialization.HybridRow.RecordIO;
 using SharedListApi.Data;
+using SharedListApi.Services;
 using SharedListModels;
+using System.IO;
 
 namespace SharedListApi.Controllers
 {
@@ -10,36 +13,86 @@ namespace SharedListApi.Controllers
     public class CheckListController : Controller
     {
         
-        IDataService _dataAccess;
-        public CheckListController(IDataService dataAccess)
+        IDataService _dataService;
+        IApiKeyService _apiKeyService;
+       
+        public CheckListController(IDataService dataService, IApiKeyService apiKeyService)
         {
-            _dataAccess = dataAccess;
+            _dataService = dataService;
+            _apiKeyService = apiKeyService;
 
         }
+
         [HttpGet]
-        public async Task<ActionResult> Index(string UserId, string Id)
+        [Route("OnBoard")]
+        public ActionResult OnBoardNewUser()
         {
-            CheckListModel checkList =  await _dataAccess.GetItemAsync(UserId, Id);
+            dynamic user = new System.Dynamic.ExpandoObject();
+            user.UserId = UserIdService.GenerateUserId();
+            user.apiKey = _apiKeyService.GenerateApiKey(user.UserId);
+            return Ok(user);
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetCheckListById(string UserId, string Id)
+        {
+            CheckListModel checkList =  await _dataService.GetItemAsync(UserId, Id);
 
             return Ok(checkList);
         }
+
+        [HttpGet]
+        [Route("test")]
+        public ActionResult TestMethod(string UserId)
+        {
+            if (Request.Headers.TryGetValue("ApiKey", out var apiKey) == false)
+            {
+                return BadRequest("Api key missing");
+            };
+            var isvalid = _apiKeyService.IsApiKeyValid(UserId, apiKey);
+           
+            return Ok(isvalid);
+           
+        }
+
+        [HttpGet]
+        [Route("GetAll")]
+        public async Task<ActionResult> GetAllCheckListsByUserId(string UserId)
+        {
+            
+            if(Request.Headers.TryGetValue("ApiKey", out var apiKey) == false)
+            {
+                return BadRequest("Api key missing");
+            };
+            var isApiKeyValid = _apiKeyService.IsApiKeyValid(UserId, apiKey);
+            if (isApiKeyValid == true){
+                List<CheckListModel> checkLists = await _dataService.GetAllItemsByUserAsync(UserId);
+                return Ok(checkLists);
+            }
+            return Ok("");
+            
+
+           
+        }
         [HttpPost]
         [Route("Create")]
-        
-        
-        public ActionResult Create([FromBody]CheckListModel checkListModel)
-        {
-            _dataAccess.UpsertItemAsync(checkListModel);
-            return Ok();
-        }
-        [HttpPost]
         [Route("Update")]
 
-        public ActionResult Update([FromBody] CheckListModel checkListModel)
+
+        public async Task<ActionResult> Create([FromBody]CheckListModel checkListModel)
         {
-            _dataAccess.UpsertItemAsync(checkListModel);
+           await _dataService.UpsertItemAsync(checkListModel);
             return Ok();
         }
+
+        [HttpPost]
+        [Route("Delete")]
+
+        public async Task<ActionResult> Delete( string UserId, string Id)
+        {
+            await _dataService.DeleteItemByIdAsync(UserId, Id);
+            return Ok();
+        }
+      
 
 
     }

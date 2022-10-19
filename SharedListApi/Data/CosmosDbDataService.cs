@@ -1,7 +1,6 @@
 ﻿using SharedListModels;
 using Microsoft.Azure.Cosmos;
 
-
 namespace SharedListApi.Data
 {
     
@@ -51,7 +50,31 @@ namespace SharedListApi.Data
                 );
         }
 
+        public async Task<List<CheckListModel>> GetAllItemsByUserAsync( string userId)
+        {
+            
+            var iterator = _container.GetItemQueryIterator<CheckListModel>(queryDefinition:null, requestOptions: new QueryRequestOptions()
+            {
+                PartitionKey = new PartitionKey(userId)
+            }); ;
 
+            var checkLists = new List<CheckListModel>();
+            while (iterator.HasMoreResults)
+            {
+                var result = await iterator.ReadNextAsync();
+                checkLists.AddRange(result.Resource);
+            }
+            return checkLists;
+          
+        }
+
+        public async Task DeleteItemByIdAsync(string userId, string id)
+        {
+            await _container.DeleteItemAsync<CheckListModel>(
+                id: id,
+                partitionKey: new PartitionKey(userId)
+                );
+        }
     }
 
     

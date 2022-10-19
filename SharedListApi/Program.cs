@@ -1,4 +1,5 @@
 using SharedListApi.Data;
+using SharedListApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddControllers();
 
 // inject cosmos db client
 builder.Services.AddSingleton<IDataService,CosmosDbDataService>();
+builder.Services.AddScoped<IApiKeyService,ApiKeyService>();
 
 var app = builder.Build();
 
