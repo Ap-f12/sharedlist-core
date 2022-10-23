@@ -10,7 +10,9 @@ builder.Services.AddControllers();
 
 // inject cosmos db client
 builder.Services.AddSingleton<IDataService,CosmosDbDataService>();
-builder.Services.AddScoped<IApiKeyService,ApiKeyService>();
+builder.Services.AddScoped<IUserRegistrationService,UserRegistrationService>();
+builder.Services.AddScoped<IShareCheckListService,ShareCheckListService>();
+builder.Services.AddScoped<ICheckListService, CheckListService>();
 
 var app = builder.Build();
 

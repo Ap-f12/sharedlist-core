@@ -26,26 +26,11 @@ namespace SharedListApi.Data
           
         }
 
-        //public async Task UpdateItemAsync(CheckListModel checkListModel)
-        //{
 
-        //    List<PatchOperation> operations = new()
-        //    {
-        //            PatchOperation.Replace("/CheckListItems", checkListModel.CheckListItems),
-        //            PatchOperation.Replace("/UpdatedOn", checkListModel.UpdatedOn),
-
-        //    };
-        //    await _container.PatchItemAsync<CheckListModel>(
-        //        id: checkListModel.id,
-        //        partitionKey: new PartitionKey("/UserId"),
-        //        patchOperations: operations
-        //        );
-        //}
-
-        public async Task<CheckListModel> GetItemAsync(string userId, string checkListId)
+        public async Task<CheckListModel> GetItemByIdAsync(string userId, string id)
         {
             return await _container.ReadItemAsync<CheckListModel>(
-                id: checkListId,
+                id: id,
                 partitionKey: new PartitionKey(userId)
                 );
         }
