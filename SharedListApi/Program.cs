@@ -1,3 +1,4 @@
+using SharedListApi.Configuration;
 using SharedListApi.Data;
 using SharedListApi.Services;
 
@@ -9,9 +10,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 // inject cosmos db client
-builder.Services.AddSingleton<IDataService,CosmosDbDataService>();
-builder.Services.AddScoped<IUserRegistrationService,UserRegistrationService>();
-builder.Services.AddScoped<IShareCheckListService,ShareCheckListService>();
+builder.Services.AddSingleton<IDataService, CosmosDbDataService>();
+builder.Services.AddScoped<IUserRegistrationService, UserRegistrationService>();
+builder.Services.AddScoped<IShareCheckListService, ShareCheckListService>();
 builder.Services.AddScoped<ICheckListService, CheckListService>();
 
 var app = builder.Build();
@@ -22,7 +23,9 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.MapControllers();
+
+
 
 app.Run();

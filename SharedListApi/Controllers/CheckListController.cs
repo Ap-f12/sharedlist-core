@@ -25,13 +25,13 @@ namespace SharedListApi.Controllers
 
         [HttpGet]
         [Route("Register")]
-        public ActionResult RegisterNewUser()
+        public IActionResult RegisterNewUser()
         {
             var user = _checkListService.RegisterUser();
             return Ok(user);
         }
         [HttpGet]
-        public async Task<ActionResult> GetCheckListById(string userId, string id)
+        public async Task<IActionResult> GetCheckListById(string userId, string id)
         {
 
             var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
@@ -50,7 +50,7 @@ namespace SharedListApi.Controllers
 
         [HttpGet]
         [Route("GetAll")]
-        public async Task<ActionResult> GetAllCheckListsByUserId(string userId)
+        public async Task<IActionResult> GetAllCheckListsByUserId(string userId)
         {
             var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
 
@@ -68,7 +68,7 @@ namespace SharedListApi.Controllers
         [Route("Update")]
 
 
-        public async Task<ActionResult> Create([FromBody]CheckListModel checkList)
+        public async Task<IActionResult> Create([FromBody]CheckListModel checkList)
         {
             var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
 
@@ -90,7 +90,7 @@ namespace SharedListApi.Controllers
         [HttpPost]
         [Route("Delete")]
 
-        public async Task<ActionResult> Delete( string userId, string id)
+        public async Task<IActionResult> Delete( string userId, string id)
         {
             var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
 
@@ -115,7 +115,7 @@ namespace SharedListApi.Controllers
         [HttpPost]
         [Route("UpdateShared")]
 
-        public async Task<ActionResult> UpdateSharedChecklist(CheckListModel checklist, string code)
+        public async Task<IActionResult> UpdateSharedChecklist(CheckListModel checklist, string code)
         {
             var success = await _checkListService.UpdateSharedCheckListAsync(checklist, code);
             if(success == true)
@@ -127,7 +127,7 @@ namespace SharedListApi.Controllers
 
         [HttpPost]
         [Route("GetShareCode")]
-        public ActionResult GetShareCode([FromBody]CheckListPermissionModel checkListPermissions)
+        public IActionResult GetShareCode([FromBody]CheckListPermissionModel checkListPermissions)
         {
             var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
 
@@ -142,7 +142,7 @@ namespace SharedListApi.Controllers
 
         [HttpGet]
         [Route("GetChecklist/{code}")]
-        public async Task<ActionResult> GetChecklistDetailsFromCode(string code)
+        public async Task<IActionResult> GetChecklistDetailsFromCode(string code)
         {
             var checklist = await _checkListService.GetCheckListFromCodeAsync(code);
 
