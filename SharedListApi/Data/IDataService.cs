@@ -4,13 +4,13 @@ namespace SharedListApi.Data
 {
     public interface IDataService
     {
-        Task UpsertItemAsync(CheckListModel checkListModel);
+        Task<bool> UpsertItemAsync(CheckListModel checkListModel);
         
         Task<CheckListModel> GetItemByIdAsync(string userId, string id);
 
         Task<List<CheckListModel>> GetAllItemsByUserAsync(string userId);
 
-        Task DeleteItemByIdAsync(string userId, string id);
+        Task<bool> DeleteItemByIdAsync(string userId, string id);
 
 
     }

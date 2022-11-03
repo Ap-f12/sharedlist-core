@@ -1,15 +1,17 @@
 ﻿using SharedListModels;
 using Microsoft.Azure.Cosmos;
+using System.Net;
+using System.Web;
 
 namespace SharedListApi.Data
 {
-    
+
     public class CosmosDbDataService : IDataService
     {
-        
+
         private CosmosClient _client;
         private Database _database;
-        private Container _container { get; set; } 
+        private Container _container { get; set; }
 
 
         public CosmosDbDataService(IConfiguration configuration)
@@ -18,27 +20,28 @@ namespace SharedListApi.Data
             _database = _client.GetDatabase(configuration["DbName"]);
             _container = _database.GetContainer("CheckListContainer");
         }
-        public async Task UpsertItemAsync(CheckListModel checkListModel)
+        public async Task<bool> UpsertItemAsync(CheckListModel checkListModel)
         {
-          
-            await _container.UpsertItemAsync<CheckListModel>(checkListModel,new PartitionKey(checkListModel.UserId));
-          
-          
+
+            var itemRespone = await _container.UpsertItemAsync<CheckListModel>(checkListModel, new PartitionKey(checkListModel.UserId));
+            return itemRespone.StatusCode == HttpStatusCode.OK || itemRespone.StatusCode == HttpStatusCode.Created;
+
+
         }
 
 
-        public async Task<CheckListModel> GetItemByIdAsync(string userId, string id)
+        public async Task<CheckListModel> GetItemByIdAsync(string userId, string checkListId)
         {
             return await _container.ReadItemAsync<CheckListModel>(
-                id: id,
+                id: checkListId,
                 partitionKey: new PartitionKey(userId)
                 );
         }
 
-        public async Task<List<CheckListModel>> GetAllItemsByUserAsync( string userId)
+        public async Task<List<CheckListModel>> GetAllItemsByUserAsync(string userId)
         {
-            
-            var iterator = _container.GetItemQueryIterator<CheckListModel>(queryDefinition:null, requestOptions: new QueryRequestOptions()
+
+            var iterator = _container.GetItemQueryIterator<CheckListModel>(queryDefinition: null, requestOptions: new QueryRequestOptions()
             {
                 PartitionKey = new PartitionKey(userId)
             }); ;
@@ -50,17 +53,21 @@ namespace SharedListApi.Data
                 checkLists.AddRange(result.Resource);
             }
             return checkLists;
-          
+
         }
 
-        public async Task DeleteItemByIdAsync(string userId, string id)
+        public async Task<bool> DeleteItemByIdAsync(string userId, string id)
         {
-            await _container.DeleteItemAsync<CheckListModel>(
-                id: id,
-                partitionKey: new PartitionKey(userId)
+            var itemResponse = await _container.DeleteItemAsync<CheckListModel>(
+                    id: id,
+                    partitionKey: new PartitionKey(userId)
                 );
+
+            return itemResponse.StatusCode == HttpStatusCode.NoContent;
+
+
         }
     }
 
-    
+
 }

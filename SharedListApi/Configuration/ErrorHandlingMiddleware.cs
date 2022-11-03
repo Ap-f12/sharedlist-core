@@ -12,8 +12,8 @@ namespace SharedListApi.Configuration
         {
             _next = next;
         }
-        //handle http error
-        public async Task Invoke(HttpContext context)
+        
+        public async Task InvokeAsync(HttpContext context)
         {
             try
             {
@@ -76,11 +76,7 @@ namespace SharedListApi.Configuration
                 statusCode = HttpStatusCode.BadRequest;
                 errorMessage = exception.Message;
             }
-            else if (exceptionType == typeof(InvalidCastException))
-            {
-                statusCode = HttpStatusCode.BadRequest;
-                errorMessage = exception.Message;
-            }
+            
             else if (exceptionType == typeof(FormatException))
             {
                 statusCode = HttpStatusCode.BadRequest;

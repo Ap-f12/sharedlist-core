@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Serialization.HybridRow.RecordIO;
+using SharedListApi.Filters;
 using SharedListApi.Data;
 using SharedListApi.Services;
 using SharedListModels;
@@ -11,55 +12,42 @@ namespace SharedListApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [ServiceFilter(typeof(ValidateTokenFilter))]
     public class CheckListController : Controller
     {
 
         ICheckListService _checkListService;
-       
-       
+
+
         public CheckListController(ICheckListService checkListService)
         {
             _checkListService = checkListService;
 
         }
 
+
         [HttpGet]
-        [Route("Register")]
-        public IActionResult RegisterNewUser()
-        {
-            var user = _checkListService.RegisterUser();
-            return Ok(user);
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetCheckListById(string userId, string id)
+        public async Task<IActionResult> GetCheckListByIdAsync(string userId, string checkListId)
         {
 
-            var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
 
-            if(isTokenPresentInRequest == true && token != null)
-            {
-                CheckListModel? checkList = await _checkListService.GetCheckListByIdAsync(userId,id,token);
-                return Ok(checkList);
-            }
-            return Unauthorized();
+            CheckListModel? checkList = await _checkListService.GetCheckListByIdAsync(userId, checkListId);
+            return Ok(checkList);
 
-          
+
+
         }
 
-        
+
 
         [HttpGet]
         [Route("GetAll")]
-        public async Task<IActionResult> GetAllCheckListsByUserId(string userId)
+        public async Task<IActionResult> GetAllCheckListsByUserIdAsync(string userId)
         {
-            var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
 
-            if (isTokenPresentInRequest == true && token != null)
-            {
-                List<CheckListModel>? checkLists = await _checkListService.GetAllCheckListsByUserIdAsync(userId, token);
-                return Ok(checkLists);
-            }
-            return Unauthorized();
+            List<CheckListModel>? checkLists = await _checkListService.GetAllCheckListsByUserIdAsync(userId);
+            return Ok(checkLists);
+
 
 
         }
@@ -68,81 +56,48 @@ namespace SharedListApi.Controllers
         [Route("Update")]
 
 
-        public async Task<IActionResult> Create([FromBody]CheckListModel checkList)
+        public async Task<IActionResult> CreateAsync([FromBody] CheckListModel checkList)
         {
-            var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
 
-            if (isTokenPresentInRequest == true && token != null)
-            {
-                var success = await _checkListService.CreateOrUpdateCheckListAsync(checkList, token);
-                if(success == true)
-                {
-                    return Ok("success");
-                }
-                else
-                {
-                    return BadRequest("something went wrong");
-                }
-            };
-            return Unauthorized();
+            return Ok(await _checkListService.CreateOrUpdateCheckListAsync(checkList));
+
+
         }
 
         [HttpPost]
         [Route("Delete")]
 
-        public async Task<IActionResult> Delete( string userId, string id)
+        public async Task<IActionResult> DeleteAsync(string userId, string checkListId)
         {
-            var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
+            return Ok(await _checkListService.DeleteCheckListAsync(userId, checkListId));
 
-            if (isTokenPresentInRequest == true && token != null)
-            {
-                var success = await _checkListService.DeleteCheckListAsync(userId, id, token);
-                if (success == true)
-                {
-                    return Ok("success");
-                }
-                else
-                {
-                    return BadRequest("something went wrong");
-                }
-            }
-
-            return Unauthorized();
-           
         }
 
 
         [HttpPost]
         [Route("UpdateShared")]
 
-        public async Task<IActionResult> UpdateSharedChecklist(CheckListModel checklist, string code)
+        public async Task<IActionResult> UpdateSharedChecklistAsync([FromBody] CheckListModel checklist, string code)
         {
-            var success = await _checkListService.UpdateSharedCheckListAsync(checklist, code);
-            if(success == true)
-            {
-                return Ok("Updated");
-            }
-            return Unauthorized();
+            return Ok(await _checkListService.UpdateSharedCheckListAsync(checklist, code));
         }
 
         [HttpPost]
-        [Route("GetShareCode")]
-        public IActionResult GetShareCode([FromBody]CheckListPermissionModel checkListPermissions)
+        [Route("GenerateShareCode")]
+        public IActionResult GetShareCode([FromBody] CheckListPermissionModel checkListPermissions)
         {
-            var isTokenPresentInRequest = TryGetAuthorizationTokenFromRequest(out string? token);
-
-            if (isTokenPresentInRequest == true && token != null)
-            {
-                var code = _checkListService.GenerateCheckListShareCode(checkListPermissions, token);
-                return Ok(code);
-            }
-
-            return Unauthorized();
+          
+            var code = _checkListService.GenerateCheckListShareCode(checkListPermissions);
+            return Ok(code);
+            
         }
+        
+        
+        
 
         [HttpGet]
-        [Route("GetChecklist/{code}")]
-        public async Task<IActionResult> GetChecklistDetailsFromCode(string code)
+        [Route("GetChecklist")]
+        public async Task<IActionResult> GetChecklistDetailsFromCodeAsync(string code)
         {
             var checklist = await _checkListService.GetCheckListFromCodeAsync(code);
 
@@ -150,21 +105,7 @@ namespace SharedListApi.Controllers
             return Ok(checklist);
         }
 
-        [NonAction]
-        public bool TryGetAuthorizationTokenFromRequest(out string? token)
-        {
-            if (Request.Headers.TryGetValue("Authorization", out var authToken) == true)
-            {
-                token = authToken;
-                return true;
-            }
-            else
-            {
-                token = null;
-                return false;
-            }
-          ;
-        }
+     
 
 
     }

@@ -46,7 +46,7 @@ namespace SharedListApi.Services
             return Convert.ToBase64String(encryptedChecklistJsonToByteArray);
         }
 
-        public CheckListPermissionModel GetCheckListDetailsFromCode(string code)
+        public CheckListPermissionModel GetCheckListDetailsFromCode(string code )
         {
             byte[] iv = new byte[16];
             byte[] buffer = Convert.FromBase64String(code);

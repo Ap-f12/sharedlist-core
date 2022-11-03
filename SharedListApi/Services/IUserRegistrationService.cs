@@ -1,9 +1,10 @@
-﻿namespace SharedListApi.Services
+﻿using SharedListModels;
+
+namespace SharedListApi.Services
 {
     public interface IUserRegistrationService
     {
-        string GenerateToken(string userId);
-        string GenerateUserId();
+        UserCredentialsModel RegisterUser();
         bool IsTokenValid(string userId, string apiKey);
     }
 }

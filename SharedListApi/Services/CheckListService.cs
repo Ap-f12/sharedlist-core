@@ -16,48 +16,30 @@ namespace SharedListApi.Services
             _dataService = dataService;
         }
 
-        public UserRegistrationModel RegisterUser()
-        {
-            UserRegistrationModel userRegistrationModel = new UserRegistrationModel();
-            userRegistrationModel.UserId = _userRegistrationService.GenerateUserId();
-            userRegistrationModel.Token = _userRegistrationService.GenerateToken(userRegistrationModel.UserId);
+       
 
-            return userRegistrationModel;
+        public async Task<List<CheckListModel>?> GetAllCheckListsByUserIdAsync(string userId)
+        {
+          
+            return await _dataService.GetAllItemsByUserAsync(userId);
+           
 
         }
 
-        public async Task<List<CheckListModel>?> GetAllCheckListsByUserIdAsync(string userId, string token)
+        public async Task<bool> CreateOrUpdateCheckListAsync(CheckListModel checkListModel)
         {
-            var isTokenValid = _userRegistrationService.IsTokenValid(userId, token);
-
-            if (isTokenValid == true)
-            {
-                return await _dataService.GetAllItemsByUserAsync(userId);
-            }
-            return null;
-
+            
+            return await _dataService.UpsertItemAsync(checkListModel);
+           
+            
         }
 
-        public async Task<bool> CreateOrUpdateCheckListAsync(CheckListModel checkListModel, string token)
+        public async Task<bool> DeleteCheckListAsync(string userId, string checkListId)
         {
-            var isTokenValid = _userRegistrationService.IsTokenValid(checkListModel.UserId, token);
-
-            if (isTokenValid == true)
-            {
-                await _dataService.UpsertItemAsync(checkListModel);
-                return true;
-            }
-            return false;
-        }
-
-        public async Task<bool> DeleteCheckListAsync(string userId, string checkListId, string token)
-        {
-            var isTokenValid = _userRegistrationService.IsTokenValid(userId, token);
-            if (isTokenValid == true)
-            {
-                await _dataService.DeleteItemByIdAsync(userId, checkListId);
-            }
-            return false;
+           
+            await _dataService.DeleteItemByIdAsync(userId, checkListId);
+            return true;
+            
         }
 
         public async Task<bool> UpdateSharedCheckListAsync(CheckListModel checkListModel, string code)
@@ -71,25 +53,19 @@ namespace SharedListApi.Services
             return false;
         }
 
-        public string? GenerateCheckListShareCode(CheckListPermissionModel checkListPermissionModel, string token)
+        public string? GenerateCheckListShareCode(CheckListPermissionModel checkListPermissionModel)
         {
-            var isTokenValid = _userRegistrationService.IsTokenValid(checkListPermissionModel.UserId, token);
-            if (isTokenValid == true)
-            {
-                return _shareCheckListService.GenerateShareCode(checkListPermissionModel);
-            }
-            return null;
+            
+             return _shareCheckListService.GenerateShareCode(checkListPermissionModel);
+            
 
         }
 
-        public async Task<CheckListModel?> GetCheckListByIdAsync(string userId, string checkListId, string token)
+        public async Task<CheckListModel?> GetCheckListByIdAsync(string userId, string checkListId)
         {
-            var isTokenValid = _userRegistrationService.IsTokenValid(userId, token);
-            if (isTokenValid == true)
-            {
-                return await _dataService.GetItemByIdAsync(userId, checkListId);
-            }
-            return null;
+           
+            return await _dataService.GetItemByIdAsync(userId, checkListId);
+            
 
         }
 

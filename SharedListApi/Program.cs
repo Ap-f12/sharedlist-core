@@ -1,19 +1,26 @@
+
+using SharedListApi.Filters;
 using SharedListApi.Configuration;
 using SharedListApi.Data;
 using SharedListApi.Services;
+using System.Reflection.Metadata.Ecma335;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
+//builder.Services.AddControllers(options =>
+//{
+//    options.Filters.Add(new ValidateTokenFilter(new UserRegistrationService()));
+//});
+
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
-// inject cosmos db client
 builder.Services.AddSingleton<IDataService, CosmosDbDataService>();
 builder.Services.AddScoped<IUserRegistrationService, UserRegistrationService>();
 builder.Services.AddScoped<IShareCheckListService, ShareCheckListService>();
 builder.Services.AddScoped<ICheckListService, CheckListService>();
+builder.Services.AddScoped<ValidateTokenFilter>();
 
 var app = builder.Build();
 
@@ -21,10 +28,14 @@ var app = builder.Build();
 
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
+
 app.UseMiddleware<ErrorHandlingMiddleware>();
+
 app.MapControllers();
+
+
+
 
 
 

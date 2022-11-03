@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using SharedListModels;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SharedListApi.Services
@@ -13,7 +14,21 @@ namespace SharedListApi.Services
         {
             _secretKey = configuration["SecretKey"];
         }
-        public string GenerateUserId()
+
+        public UserRegistrationService()
+        {
+        }
+
+        public UserCredentialsModel RegisterUser()
+        {
+            UserCredentialsModel userCredentials = new UserCredentialsModel();
+            userCredentials.UserId = GenerateUserId();
+            userCredentials.Token = GenerateToken(userCredentials.UserId);
+
+            return userCredentials;
+
+        }
+        private static string GenerateUserId()
         {
             int userIdLength = 16;
             Random random = new Random();
@@ -29,7 +44,7 @@ namespace SharedListApi.Services
             return userId;
         }
 
-        public string GenerateToken(string userId)
+        private static string GenerateToken(string userId)
         {
             var buffer = Encoding.UTF8.GetBytes(userId + _secretKey);
             var bufferHash = SHA256.HashData(buffer);
